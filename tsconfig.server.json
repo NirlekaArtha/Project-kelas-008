@@ -1,0 +1,25 @@
+{
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"module": "commonjs",
+		"outDir": "./dist",
+		"rootDir": "./src/server",
+		"baseUrl": ".",
+		"paths": {
+			"@/*": [
+				"./src/client/*"
+			],
+			"@server/*": [
+				"./src/server/*"
+			]
+		},
+		"types": [
+			"node",
+			"vite/client"
+		],
+		"esModuleInterop": true
+	},
+	"include": [
+		"src/server/**/*"
+	]
+}

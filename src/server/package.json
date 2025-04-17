@@ -1,0 +1,29 @@
+{
+	"name": "server",
+	"version": "1.0.0",
+	"main": "index.js",
+	"directories": {
+		"test": "tests"
+	},
+	"scripts": {
+		"client:dev": "cd client && npm run dev",
+		"server:dev": "cd server && npm run dev",
+		"dev": "concurrently \"npm run server:dev\" \"npm run client:dev\""
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"description": "",
+	"dependencies": {
+		"concurrently": "^9.1.2",
+		"cors": "^2.8.5",
+		"express": "^5.1.0"
+	},
+	"devDependencies": {
+		"@types/cors": "^2.8.17",
+		"@types/express": "^5.0.1",
+		"nodemon": "^3.1.9",
+		"ts-node": "^10.9.2",
+		"typescript": "^5.8.3"
+	}
+}
