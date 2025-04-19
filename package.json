@@ -4,7 +4,8 @@
 	"version": "0.0.0",
 	"type": "module",
 	"scripts": {
-		"dev": "vite",
+		"dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+		"dev:client": "vite",
 		"dev:server": "nodemon --watch src/server --exec 'ts-node' src/server/server.ts",
 		"build": "tsc -b && vite build",
 		"build:server": "tsc -p tsconfig.server.json",
@@ -13,7 +14,10 @@
 	},
 	"dependencies": {
 		"@tailwindcss/vite": "^4.1.4",
+		"concurrently": "^9.1.2",
+		"cors": "^2.8.5",
 		"dotenv": "^16.5.0",
+		"express": "^5.1.0",
 		"nodemon": "^3.1.9",
 		"path": "^0.12.7",
 		"react": "^19.0.0",
