@@ -6,7 +6,7 @@
 	"scripts": {
 		"dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
 		"dev:client": "vite",
-		"dev:server": "nodemon --watch src/server --exec 'ts-node' src/server/server.ts",
+		"dev:server": "nodemon --watch src/server --exec ts-node src/server/server.ts",
 		"build": "tsc -b && vite build",
 		"build:server": "tsc -p tsconfig.server.json",
 		"lint": "eslint .",
