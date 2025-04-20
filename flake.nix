@@ -14,7 +14,7 @@
         pkgs = nixpkgs.legacyPackages.${system};
       in
         pkgs.mkShell {
-          name = "python_dev";
+          name = "js_ts_dev";
           buildInputs = with pkgs; [
             nodejs
           ];
