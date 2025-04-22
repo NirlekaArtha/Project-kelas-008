@@ -1,0 +1,14 @@
+version: '3.9'
+
+services:
+    postgres:
+      image: postgres:17.4-alpine3.21
+      ports:
+        - 5432:5432
+      volumes:
+        - ~/apps/postgres:/var/lib/postgresql/data
+      environment:
+         POSTGRES_USERNAME: ${POSTGRES_USERNAME}
+         POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+         POSTGRES_HOST: ${POSTGRES_HOST}
+         POSTGRES_DB: ${POSTGRES_DB}
