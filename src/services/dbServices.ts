@@ -3,7 +3,6 @@ import { QueryResult } from 'pg';
 
 export class DbService {
   /**
-   * Eksekusi query dengan parameter yang di-escaped secara aman
    * @param text - SQL query text
    * @param params - Parameter untuk query
    * @returns Promise dengan hasil query
@@ -22,7 +21,6 @@ export class DbService {
   }
 
   /**
-   * Eksekusi query dalam transaksi
    * @param callback - Fungsi callback yang menerima client dan mengeksekusi query
    * @returns Promise dengan hasil dari callback
    */

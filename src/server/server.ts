@@ -2,19 +2,16 @@ import express, { Request, Response } from 'express';
 import { testDbConnection } from '../configs/dbConnection';
 import dbService from '../services/dbServices';
 
-// Initialize Express app
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
 app.use(express.json());
 
-// Routes
 app.get('/', (_req: Request, res: Response) => {
   res.json({ message: 'API is running' });
 });
 
-// Sample route using database
+// Test koneksi DB 
 app.get('/db-test', async (_req: Request, res: Response) => {
   try {
     const result = await dbService.query('SELECT NOW() as current_time');
@@ -33,10 +30,8 @@ app.get('/db-test', async (_req: Request, res: Response) => {
   }
 });
 
-// Start server
 const startServer = async () => {
   try {
-    // Test database connection before starting the server
     const isConnected = await testDbConnection();
     
     if (!isConnected) {
@@ -54,7 +49,6 @@ const startServer = async () => {
   }
 };
 
-// Start the server
 startServer();
 
 // Handle unhandled promise rejections
