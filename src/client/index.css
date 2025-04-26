@@ -1,1 +1,15 @@
+@import url("https://fonts.googleapis.com/css2?family=Mukta:wght@200;300;400;500;600;700;800&family=Parkinsans:wght@300..800&family=Signika+Negative:wght@300..700&family=Tektur:wght@400..900&display=swap");
 @import "tailwindcss";
+
+@theme {
+  /* font */
+  --font-poppins: "Poppins", sans-serif;
+  --font-signika: "Signika Negative", sans-serif;
+  --font-mukta: "Mukta", sans-serif;
+  --font-tektur: "Tektur", sans-serif;
+  --font-parkinsans: "Parkinsans", sans-serif;
+
+  /* text */
+  --color-text: #d1d9f0;
+  --color-subtext: #7c8bac;
+}
