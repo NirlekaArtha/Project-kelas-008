@@ -112,7 +112,7 @@ const InputForm = ({ type, name }: { type: string; name: string }) => {
     <input
       type={type}
       placeholder={name}
-	  name={name}
+ 	    name={name}
       autoComplete="off"
       className="rounded-lg bg-black/20 p-2 text-lg focus:ring-0 focus:outline-2 focus:outline-lime-500"
     />
