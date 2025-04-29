@@ -80,10 +80,10 @@ const Authlayout = forwardRef<HTMLDivElement, { name: string }>(
         </h1>
 
         {/* form */}
-        <form className="flex w-full flex-col gap-2">
+		<form className="flex w-full flex-col gap-2" method="POST" action="/api/users/regist" >
           <div className="flex flex-col gap-4">
-            <InputForm type="email" name="Email" />
-            <InputForm type="password" name="Password" />
+            <InputForm type="email" name="email" />
+            <InputForm type="password" name="password" />
             {name === "sign up" && <InputForm type="text" name="username" />}
           </div>
 
@@ -112,6 +112,7 @@ const InputForm = ({ type, name }: { type: string; name: string }) => {
     <input
       type={type}
       placeholder={name}
+ 	    name={name}
       autoComplete="off"
       className="rounded-lg bg-black/20 p-2 text-lg focus:ring-0 focus:outline-2 focus:outline-lime-500"
     />

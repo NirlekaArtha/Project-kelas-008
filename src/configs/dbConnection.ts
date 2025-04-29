@@ -2,11 +2,15 @@ import { pgConfig } from './configs'
 import pg from 'pg';
 
 const dbConfig = new pg.Pool({
-	host: pgConfig.host,
-	port: pgConfig.port,
 	user: pgConfig.username,
 	password: pgConfig.password,
 	database: pgConfig.database,
+	host: pgConfig.host,
+	port: pgConfig.port,
+	max: 20,
+	idleTimeoutMillis: 1000,
+	connectionTimeoutMillis: 1000,
+	maxUses: 7500,
 });
 
 const createDbPool = () => {
@@ -22,7 +26,7 @@ const createDbPool = () => {
 	} catch (error) {
 		console.error('Database configuration error:', error);
 		throw error;
-	}
+	} 
 };
 
 const pool = createDbPool();
