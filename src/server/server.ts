@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express';
 import { testDbConnection } from '../configs/dbConnection';
 import dbService from '../services/dbServices';
-import { changePassword, createUser, deleteUser, getAllUsers, getUserByUsername, getUsers, searchUsers, updateUser } from './controllers/userController';
+import { changePassword, createUser, deleteUser, getAllUsers, getUserByUsername, searchUsers, updateUser } from './controllers/userController';
 import { authenticateToken } from './middleware';
 
 const app = express();
@@ -18,7 +18,6 @@ app.post('/api/users/:username/changepassword', changePassword);
 app.get('/api/users/search/:id', searchUsers);
 app.get('/api/users/:username', getUserByUsername);
 app.get('/api/users', getAllUsers);
-app.get('/api/users/:id', getUsers);
 
 // Test koneksi DB 
 app.get('/db-test', async (_req: Request, res: Response) => {

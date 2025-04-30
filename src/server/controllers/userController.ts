@@ -1,45 +1,52 @@
-import { Request, response, Response } from "express";
+import { Request, Response } from "express";
 import bcrypt from 'bcrypt';
 import dbServices from "../../services/dbServices";
 import { SafeUser, UserWithPassword } from "../models/user";
 import { generateAccessToken } from "../middleware";
 import { HttpResponse } from "../helpers/http-responses";
 
-const httpResponse = new HttpResponse(response);
+// HACK: Cara agak dongo tapi ora ngapa lah yang penting gak ada error
+interface CountResult {
+	readonly count: string
+};
 
 type UserRegistration = Omit<UserWithPassword,
 	'id' | 'is_admin' | 'is_active' | 'created_at' | 'updated_at'
 >;
 
-export const getUsers = async (req: Request, res: Response) => {
-	try {
-		const { id } = req.params;
-		const query = 'SELECT username,created_at,updated_at FROM users WHERE id = $1';
-		const result = await dbServices.query<SafeUser>(query, [id]);
-
-		if (result.rows.length === 0) {
-			httpResponse.userNotFound();
-			return;
-		}
-
-		res.json({ data: result.rows[0] });
-	} catch (error) {
-		console.error('Error fetching data: ', error);
-		httpResponse.internalServerError();
-	}
-};
+// export const getUsers = async (req: Request, res: Response) => {
+// 	try {
+// 		const { id } = req.params;
+// 		const query = 'SELECT username,created_at,updated_at FROM users WHERE id = $1 OR username ILIKE = $1';
+// 		const result = await dbServices.query<SafeUser>(query, [id]);
+//
+// 		if (result.rows.length === 0) {
+// 			httpResponse.userNotFound();
+// 			return;
+// 		}
+//
+// 		res.json({ data: result.rows[0] });
+// 	} catch (error) {
+// 		console.error('Error fetching data: ', error);
+// 		httpResponse.internalServerError();
+// 	}
+// };
 
 export const getAllUsers = async (req: Request, res: Response) => {
+	const httpResponse = new HttpResponse(res);
+
 	try {
 		const page = parseInt(req.query.page as string) || 1;
 		const limit = parseInt(req.query.limit as string) || 10;
 		const offset = (page - 1) * limit;
 
-		const query = 'SELECT id, username, email, created_at, updated_at FROM users ORDER BY created_at DESC LIMIT $1 OFFSET $2';
+		const query = 'SELECT id, username, created_at, updated_at FROM users ORDER BY created_at DESC LIMIT $1 OFFSET $2';
 		const countQuery = 'SELECT COUNT(*) FROM users';
 
-		const result = await dbServices.query<SafeUser>(query, [limit, offset]);
-		const countResult = await dbServices.query<Pick<SafeUser, 'id'>>(countQuery);
+		const [result, countResult] = await Promise.all([
+			dbServices.query<SafeUser>(query, [limit, offset]),
+			dbServices.query<Pick<SafeUser, 'id'>>(countQuery),
+		]);
 
 		const totalUsers = countResult.rows[0].id;
 		const totalPages = Math.ceil(totalUsers / limit);
@@ -60,6 +67,8 @@ export const getAllUsers = async (req: Request, res: Response) => {
 };
 
 export const createUser = async (req: Request<{}, {}, UserRegistration>, res: Response) => {
+	const httpResponse = new HttpResponse(res);
+
 	try {
 		const { username, email, password }: UserRegistration = req.body;
 
@@ -127,6 +136,8 @@ export const createUser = async (req: Request<{}, {}, UserRegistration>, res: Re
 };
 
 export const updateUser = async (req: Request, res: Response) => {
+	const httpResponse = new HttpResponse(res);
+
 	try {
 		const { id } = req.params;
 		const { email }: UserRegistration = req.body;
@@ -168,6 +179,8 @@ export const updateUser = async (req: Request, res: Response) => {
 };
 
 export const deleteUser = async (req: Request, res: Response) => {
+	const httpResponse = new HttpResponse(res);
+
 	try {
 		const { id } = req.params;
 
@@ -192,6 +205,8 @@ export const deleteUser = async (req: Request, res: Response) => {
 };
 
 export const changePassword = async (req: Request, res: Response) => {
+	const httpResponse = new HttpResponse(res);
+
 	try {
 		const { username } = req.params;
 		const { currentPassword, newPassword } = req.body;
@@ -239,6 +254,8 @@ export const changePassword = async (req: Request, res: Response) => {
 };
 
 export const searchUsers = async (req: Request, res: Response) => {
+	const httpResponse = new HttpResponse(res);
+
 	try {
 		const { query: searchQuery } = req.query;
 		const page = parseInt(req.query.page as string) || 1;
@@ -274,10 +291,15 @@ export const searchUsers = async (req: Request, res: Response) => {
       		  email ILIKE $1
 		`;
 
-		const result = await dbServices.query<SafeUser>(query, [searchTerm, limit, offset]);
-		const countResult = await dbServices.query<SafeUser>(countQuery, [searchTerm]);
+		// const result = await dbServices.query<SafeUser>(query, [searchTerm, limit, offset]);
+		// const countResult = await dbServices.query<SafeUser>(countQuery, [searchTerm]);
 
-		const totalUsers = countResult.rows[0].id;
+		const [result, countResult] = await Promise.all([
+			dbServices.query<SafeUser>(query, [searchTerm, limit, offset]),
+			dbServices.query<CountResult>(countQuery, [searchTerm]),
+		])
+
+		const totalUsers = parseInt(countResult.rows[0].count);
 		const totalPages = Math.ceil(totalUsers / limit);
 
 		res.json({
@@ -296,10 +318,12 @@ export const searchUsers = async (req: Request, res: Response) => {
 };
 
 export const getUserByUsername = async (req: Request, res: Response) => {
+	const httpResponse = new HttpResponse(res);
+
 	try {
 		const { username } = req.params;
 
-		const query = 'SELECT id, username,   email, created_at, updated_at FROM users WHERE username = $1';
+		const query = 'SELECT id, username, created_at, updated_at FROM users WHERE username = $1';
 		const result = await dbServices.query<SafeUser>(query, [username]);
 
 		if (result.rows.length === 0) {
@@ -310,6 +334,6 @@ export const getUserByUsername = async (req: Request, res: Response) => {
 		res.json({ user: result.rows[0] });
 	} catch (error) {
 		console.error('Error fetching user: ', error);
-		res.status(500).json({ message: 'Internal server error' });
+		httpResponse.internalServerError();
 	}
 };
