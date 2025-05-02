@@ -1,23 +1,25 @@
 export interface Blog {
 	id: number;
-	author: string;
+	author: number;
 	header: string;
 	image: string;
 	description: string;
 	likes: number;
 	views: number;
-	date: Date;
+	updated_at: Date;
+	created_at: Date;
 	tag: string;
 }
 
 export const DummyBlog: Blog = {
 	id: 1,
-	author: 'gueh',
+	author: 1,
 	header: 'pitra baka',
 	image: 'file://',
 	description: 'Lu mah enak',
 	likes: 999,
 	views: 999,
-	date: new Date(),
+	updated_at: new Date(),
+	created_at: new Date(),
 	tag: 'JadiGini'
 };

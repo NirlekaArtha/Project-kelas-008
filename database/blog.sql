@@ -1,11 +1,12 @@
 CREATE TABLE blog(
 	id SERIAL PRIMARY KEY, 
-	header VARCHAR(254),
-	image TEXT,
-	description TEXT,
-	author VARCHAR(75) references users(id), 
+	header VARCHAR(254) UNIQUE NOT NULL,
+	image TEXT NOT NULL,
+	description TEXT NOT NULL,
+	author INT references users(id) NOT NULL, 
 	likes INT,
 	views INT,
-	date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-	tag VARCHAR(50),
-)
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	tag VARCHAR(50)
+);
