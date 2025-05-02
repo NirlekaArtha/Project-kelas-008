@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 import dbServices from "../../services/dbServices";
 import { SafeUser, UserWithPassword } from "../models/user";
 import { generateAccessToken } from "../middleware";
-import { HttpResponse } from "../helpers/http-responses";
+import { createHttpResponse } from "../helpers/http-responses";
 
 // HACK: Cara agak dongo tapi ora ngapa lah yang penting gak ada error
 interface CountResult {
@@ -14,28 +14,9 @@ type UserRegistration = Omit<UserWithPassword,
 	'id' | 'is_admin' | 'is_active' | 'created_at' | 'updated_at'
 >;
 
-// export const getUsers = async (req: Request, res: Response) => {
-// 	try {
-// 		const { id } = req.params;
-// 		const query = 'SELECT username,created_at,updated_at FROM users WHERE id = $1 OR username ILIKE = $1';
-// 		const result = await dbServices.query<SafeUser>(query, [id]);
-//
-// 		if (result.rows.length === 0) {
-// 			httpResponse.userNotFound();
-// 			return;
-// 		}
-//
-// 		res.json({ data: result.rows[0] });
-// 	} catch (error) {
-// 		console.error('Error fetching data: ', error);
-// 		httpResponse.internalServerError();
-// 	}
-// };
-
 export const getAllUsers = async (req: Request, res: Response) => {
-	const httpResponse = new HttpResponse(res);
-
 	try {
+		const httpRes = createHttpResponse(res);
 		const page = parseInt(req.query.page as string) || 1;
 		const limit = parseInt(req.query.limit as string) || 10;
 		const offset = (page - 1) * limit;
@@ -62,12 +43,12 @@ export const getAllUsers = async (req: Request, res: Response) => {
 		});
 	} catch (error) {
 		console.error('Error fetching users: ', error);
-		httpResponse.internalServerError();
+		return createHttpResponse(res).internalServerError('Gagal mengambil data users');
 	}
 };
 
 export const createUser = async (req: Request<{}, {}, UserRegistration>, res: Response) => {
-	const httpResponse = new HttpResponse(res);
+	const httpResponse = createHttpResponse(res);
 
 	try {
 		const { username, email, password }: UserRegistration = req.body;
@@ -124,19 +105,18 @@ export const createUser = async (req: Request<{}, {}, UserRegistration>, res: Re
 		const newUser: SafeUser = insertResult.rows[0];
 		res.json(token);
 
-		res.status(201).json({
-			message: 'User berhasil dibuat',
-			user: newUser,
-		});
+		return httpResponse
+			.created(newUser)
+			.set('Location', `/api/users/${newUser.id}`);
 
 	} catch (error) {
 		console.error('Error creating user: ', error);
-		httpResponse.internalServerError();
+		return createHttpResponse(res).internalServerError('Gagal membuat user');
 	}
 };
 
 export const updateUser = async (req: Request, res: Response) => {
-	const httpResponse = new HttpResponse(res);
+	const httpResponse = createHttpResponse(res);
 
 	try {
 		const { id } = req.params;
@@ -179,7 +159,7 @@ export const updateUser = async (req: Request, res: Response) => {
 };
 
 export const deleteUser = async (req: Request, res: Response) => {
-	const httpResponse = new HttpResponse(res);
+	const httpResponse = createHttpResponse(res);
 
 	try {
 		const { id } = req.params;
@@ -205,7 +185,7 @@ export const deleteUser = async (req: Request, res: Response) => {
 };
 
 export const changePassword = async (req: Request, res: Response) => {
-	const httpResponse = new HttpResponse(res);
+	const httpResponse = createHttpResponse(res);
 
 	try {
 		const { username } = req.params;
@@ -229,7 +209,7 @@ export const changePassword = async (req: Request, res: Response) => {
 		const isPasswordValid = await bcrypt.compare(currentPassword, userResult.rows[0].password);
 
 		if (!isPasswordValid) {
-			httpResponse.invalidRequest('Password lama tidak sesuai');
+			httpResponse.unauthorized('Password lama tidak sesuai');
 			return;
 		}
 
@@ -254,7 +234,7 @@ export const changePassword = async (req: Request, res: Response) => {
 };
 
 export const searchUsers = async (req: Request, res: Response) => {
-	const httpResponse = new HttpResponse(res);
+	const httpResponse = createHttpResponse(res);
 
 	try {
 		const { query: searchQuery } = req.query;
@@ -291,9 +271,6 @@ export const searchUsers = async (req: Request, res: Response) => {
       		  email ILIKE $1
 		`;
 
-		// const result = await dbServices.query<SafeUser>(query, [searchTerm, limit, offset]);
-		// const countResult = await dbServices.query<SafeUser>(countQuery, [searchTerm]);
-
 		const [result, countResult] = await Promise.all([
 			dbServices.query<SafeUser>(query, [searchTerm, limit, offset]),
 			dbServices.query<CountResult>(countQuery, [searchTerm]),
@@ -318,7 +295,7 @@ export const searchUsers = async (req: Request, res: Response) => {
 };
 
 export const getUserByUsername = async (req: Request, res: Response) => {
-	const httpResponse = new HttpResponse(res);
+	const httpResponse = createHttpResponse(res);
 
 	try {
 		const { username } = req.params;
