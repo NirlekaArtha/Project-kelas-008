@@ -11,12 +11,11 @@ interface CountResult {
 };
 
 type UserRegistration = Omit<UserWithPassword,
-	'id' | 'is_admin' | 'is_active' | 'created_at' | 'updated_at'
+	'is_active' | 'created_at' | 'updated_at'
 >;
 
 export const getAllUsers = async (req: Request, res: Response) => {
 	try {
-		const httpRes = createHttpResponse(res);
 		const page = parseInt(req.query.page as string) || 1;
 		const limit = parseInt(req.query.limit as string) || 10;
 		const offset = (page - 1) * limit;
@@ -43,20 +42,21 @@ export const getAllUsers = async (req: Request, res: Response) => {
 		});
 	} catch (error) {
 		console.error('Error fetching users: ', error);
-		return createHttpResponse(res).internalServerError('Gagal mengambil data users');
+		createHttpResponse(res).internalServerError('Gagal mengambil data users');
+		return;
 	}
 };
 
 export const createUser = async (req: Request<{}, {}, UserRegistration>, res: Response) => {
-	const httpResponse = createHttpResponse(res);
+	const Res = createHttpResponse(res);
 
 	try {
-		const { username, email, password }: UserRegistration = req.body;
+		const { username, email, password, jabatan }: UserRegistration = req.body;
 
 
 		// Validasi biasa
 		if (!username || !email || !password) {
-			httpResponse.badRequest('Username, email dan password wajib hukumnya untuk diisi');
+			Res.badRequest('Username, email dan password wajib hukumnya untuk diisi');
 			return;
 		}
 
@@ -65,7 +65,7 @@ export const createUser = async (req: Request<{}, {}, UserRegistration>, res: Re
 		const checkResult = await dbServices.query<UserWithPassword>(checkQuery, [username, email]);
 
 		if (checkResult.rows.length > 0) {
-			httpResponse.conflictUsernameOrEmailExists();
+			Res.conflictUsernameOrEmailExists();
 			return
 		}
 
@@ -79,55 +79,67 @@ export const createUser = async (req: Request<{}, {}, UserRegistration>, res: Re
       		  username, 
       		  email, 
       		  password,
+			  jabatan,
       		  is_admin,
       		  is_active,
       		  created_at, 
       		  updated_at
       		) 
-      		VALUES ($1, $2, $3, $4, $5, false, true, NOW(), NOW())
+      		VALUES ($1, $2, $3, $4, false, true, NOW(), NOW())
       		RETURNING 
       		  id, 
       		  username, 
       		  email, 
+			  jabatan,
       		  is_admin,
       		  is_active,
       		  created_at, 
       		  updated_at
 		`;
-		const token = generateAccessToken({ username: req.body.username });
 
-		const insertResult = await dbServices.query<SafeUser>(insertQuery, [
+		const payload = {
+			username,
+			email: email.toLowerCase(),
+			is_admin: false,
+			jabatan
+		};
+
+		const token = generateAccessToken(payload);
+
+		const insertResult = await dbServices.query<UserRegistration>(insertQuery, [
 			username,
 			email.toLowerCase(),
-			hashedPassword
+			hashedPassword,
+			jabatan
 		]);
 
-		const newUser: SafeUser = insertResult.rows[0];
+
+		const newUser: UserRegistration = insertResult.rows[0];
 		res.json(token);
 
-		return httpResponse
-			.created(newUser)
-			.set('Location', `/api/users/${newUser.id}`);
+		Res.created({ user: newUser, token: token })
+		return;
 
 	} catch (error) {
 		console.error('Error creating user: ', error);
-		return createHttpResponse(res).internalServerError('Gagal membuat user');
+		createHttpResponse(res).internalServerError('Gagal membuat user');
+		return;
 	}
 };
 
 export const updateUser = async (req: Request, res: Response) => {
-	const httpResponse = createHttpResponse(res);
+	const Res = createHttpResponse(res);
 
 	try {
 		const { id } = req.params;
-		const { email }: UserRegistration = req.body;
+		const { username, email, jabatan, khodam, description }: UserRegistration = req.body;
 
 		// Cek id user
 		const checkQuery = 'SELECT id FROM users WHERE id = $1';
 		const checkResult = await dbServices.query<SafeUser>(checkQuery, [id]);
 
 		if (checkResult.rows.length === 0) {
-			httpResponse.userNotFound();
+			Res.userNotFound();
 			return
 		}
 
@@ -135,16 +147,22 @@ export const updateUser = async (req: Request, res: Response) => {
 		const updateQuery = `
       		UPDATE users 
       		SET 
-      		  first_name = COALESCE($1, first_name),
-      		  last_name = COALESCE($2, last_name),
-      		  email = COALESCE($3, email),
+			  username = COALESCE($1, username),
+      		  email = COALESCE($2, email),
+			  jabatan = COALESCE($3, jabatan),
+			  khodam = COALESCE($4, khodam),
+			  deskripsi = COALESCE($5, deskripsi),
       		  updated_at = NOW()
-      		WHERE id = $4
-      		RETURNING id, username, email, created_at, updated_at
+      		WHERE id = $6
+      		RETURNING id, username, email, jabatan, khodam, deskripsi, created_at, updated_at
 		`;
 
-		const updateResult = await dbServices.query<Pick<SafeUser, 'id'>>(updateQuery, [
+		const updateResult = await dbServices.query<SafeUser>(updateQuery, [
+			username,
 			email,
+			jabatan,
+			khodam,
+			description,
 			id
 		]);
 
@@ -154,9 +172,18 @@ export const updateUser = async (req: Request, res: Response) => {
 		});
 	} catch (error) {
 		console.error('Error updating user: ', error);
-		httpResponse.internalServerError();
+		Res.internalServerError();
 	}
 };
+
+export const updateEmail = async (req: Request, res: Response) => {
+	const e = createHttpResponse(res);
+	try {
+		const { id } = req.params;
+	} catch (error) {
+
+	}
+}
 
 export const deleteUser = async (req: Request, res: Response) => {
 	const httpResponse = createHttpResponse(res);
@@ -254,8 +281,6 @@ export const searchUsers = async (req: Request, res: Response) => {
       		FROM users 
       		WHERE 
       		  username ILIKE $1 OR
-      		  first_name ILIKE $1 OR
-      		  last_name ILIKE $1 OR
       		  email ILIKE $1
       		ORDER BY created_at DESC
       		LIMIT $2 OFFSET $3

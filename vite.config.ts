@@ -12,6 +12,9 @@ export default defineConfig({
 				changeOrigin: true,
 				secure: true,
 			},
+			'/login': {
+				target: 'http://localhost:3001',
+			},
 			'/db-test': {
 				target: 'http://localhost:3001',
 				changeOrigin: true,

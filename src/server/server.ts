@@ -3,6 +3,7 @@ import { testDbConnection } from '../configs/dbConnection';
 import dbService from '../services/dbServices';
 import { changePassword, createUser, deleteUser, getAllUsers, getUserByUsername, searchUsers, updateUser } from './controllers/userController';
 import { authenticateToken } from './middleware';
+import { loginController } from './controllers/loginController';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -11,6 +12,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // API endpoint
+app.post('/login', (req: Request, res: Response) => loginController.handle(req, res));
 app.post('/api/users/regist', createUser);
 app.post('/api/users/update/:id', updateUser);
 app.post('/api/users/delete/:id', deleteUser);

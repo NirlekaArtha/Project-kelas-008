@@ -1,11 +1,17 @@
 import { NextFunction, Request, Response } from "express";
 import jwt from 'jsonwebtoken';
-import { SafeUser } from '../models/user';
+import { SafeUser, UserWithPassword } from '../models/user';
 import { config } from "../../configs/configs";
 import { HttpResponse } from "../helpers/http-responses";
 
-export const generateAccessToken = (username: any) => {
-	jwt.sign(username, config.token_secret, { expiresIn: '1800s' });
+export const generateAccessToken = (payload: object) => {
+	const secret = config.access_token_secret;
+
+	if (!secret) {
+		throw new Error("JWT_SECRET environment variable not defined!");
+	}
+
+	jwt.sign(payload, secret, { expiresIn: '4h' });
 	return;
 }
 
@@ -20,7 +26,7 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
 		return;
 	}
 
-	jwt.verify(token, config.token_secret as string, (err, decode) => {
+	jwt.verify(token, config.access_token_secret as string, (err, decode) => {
 		console.log(err);
 
 		if (err) {

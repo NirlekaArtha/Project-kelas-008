@@ -3,7 +3,18 @@ import dotenv from 'dotenv';
 dotenv.config()
 
 const validateEnv = (): void => {
-	const requiredEnvVars = ['PORT', 'NODE_ENV', 'TOKEN_SECRET', 'POSTGRES_USERNAME', 'POSTGRES_PASSWORD', 'POSTGRES_DB', 'POSTGRES_HOST'];
+	const requiredEnvVars = [
+		'PORT',
+		'NODE_ENV',
+		'ACCESS_TOKEN_SECRET',
+		'REFRESH_TOKEN_SECRET',
+		'ACCESS_TOKEN_EXPIRED',
+		'REFRESH_TOKEN_EXPIRED',
+		'REFRESH_TOKEN_COOKIE_NAME',
+		'POSTGRES_USERNAME',
+		'POSTGRES_PASSWORD',
+		'POSTGRES_DB',
+		'POSTGRES_HOST'];
 	const missingEnvVars = requiredEnvVars.filter(varName => !process.env[varName]);
 
 	if (missingEnvVars.length > 0) {
