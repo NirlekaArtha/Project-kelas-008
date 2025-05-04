@@ -1,4 +1,4 @@
-export interface SafeUser {
+export type SafeUser = {
 	id: number;
 	username: string;
 	email: string;
@@ -11,7 +11,7 @@ export interface SafeUser {
 	updated_at: Date;
 }
 
-export interface UserWithPassword extends SafeUser {
+export type UserWithPassword = SafeUser & {
 	password: string;
 }
 

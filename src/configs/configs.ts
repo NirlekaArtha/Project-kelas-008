@@ -14,7 +14,8 @@ const validateEnv = (): void => {
 		'POSTGRES_USERNAME',
 		'POSTGRES_PASSWORD',
 		'POSTGRES_DB',
-		'POSTGRES_HOST'];
+		'POSTGRES_HOST'
+	];
 	const missingEnvVars = requiredEnvVars.filter(varName => !process.env[varName]);
 
 	if (missingEnvVars.length > 0) {
@@ -22,19 +23,21 @@ const validateEnv = (): void => {
 	}
 };
 
-interface Config {
+validateEnv()
+
+type AppConfig = {
 	port: number;
-	node_env: string;
+	environment: string;
 	isProduction: string;
 	isDevelopment: string;
-	access_token_secret: string;
-	refresh_token_secret: string;
-	access_token_expired: string;
-	refresh_token_expired: string;
-	refresh_token_cookie_name: string;
+	accessTokenSecret: string;
+	refreshTokenSecret: string;
+	accessTokenExpired: string;
+	refreshTokenExpired: string;
+	refreshTokenCookieName: string;
 }
 
-interface PGConfig {
+type DatabaseConfig = {
 	port: number;
 	host: string;
 	username: string;
@@ -42,24 +45,22 @@ interface PGConfig {
 	database: string;
 }
 
-export const config: Config = {
-	port: parseInt(process.env.PORT || '3001', 10),
-	node_env: process.env.NODE_ENV || 'development',
+export const config: AppConfig = {
+	port: parseInt(process.env.PORT!, 10),
+	environment: process.env.NODE_ENV!,
 	isProduction: process.env.NODE_ENV || 'production',
 	isDevelopment: process.env.NODE_ENV || 'development',
-	access_token_secret: process.env.ACCESS_TOKEN_SECRET || '',
-	refresh_token_secret: process.env.REFRESH_TOKEN_SECRET || '',
-	access_token_expired: process.env.ACCESS_TOKEN_EXPIRED || '',
-	refresh_token_expired: process.env.REFRESH_TOKEN_EXPIRED || '',
-	refresh_token_cookie_name: process.env.REFRESH_TOKEN_COOKIE_NAME || '',
-}
+	accessTokenSecret: process.env.ACCESS_TOKEN_SECRET!,
+	refreshTokenSecret: process.env.REFRESH_TOKEN_SECRET!,
+	accessTokenExpired: process.env.ACCESS_TOKEN_EXPIRED!,
+	refreshTokenExpired: process.env.REFRESH_TOKEN_EXPIRED!,
+	refreshTokenCookieName: process.env.REFRESH_TOKEN_COOKIE_NAME!,
+};
 
-export const pgConfig: PGConfig = {
+export const dbConfig: DatabaseConfig = {
+	host: process.env.POSTGRES_HOST!,
 	port: parseInt(process.env.POSTGRES_PORT || '5432', 10),
-	host: process.env.POSTGRES_HOST || 'localhost',
-	username: process.env.POSTGRES_USERNAME || 'postgres',
-	password: process.env.POSTGRES_PASSWORD || '',
-	database: process.env.POSTGRES_DB || '',
-}
-
-validateEnv()
+	username: process.env.POSTGRES_USERNAME!,
+	password: process.env.POSTGRES_PASSWORD!,
+	database: process.env.POSTGRES_DB!,
+};
